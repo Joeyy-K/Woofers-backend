@@ -16,7 +16,18 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from woofers import views
+from .views import UpdateUserView, GetCSRFToken
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('user/login/', views.LoginView.as_view()),
+    path('user/logout/', views.LogoutView.as_view()),
+    path('user/user/', views.current_user, name='current-user'),
+    path('user/user/update/', UpdateUserView.as_view(), name='update-user'),
+    path('user/register/', views.RegisterView.as_view()),
+    path('users/', views.UserListView.as_view()),
+    path('veterinaries/', views.VeterinaryListCreateView.as_view(), name='veterinary-list-create'),
+    path('veterinary/<int:pk>/', views.VeterinaryDetailView.as_view(), name='veterinary-detail'),
+    path('csrf/', GetCSRFToken.as_view()),
 ]
