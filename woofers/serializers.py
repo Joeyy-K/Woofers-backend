@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Veterinary
+from .models import User, Veterinary, Review
 from django.contrib.auth import authenticate , get_user_model
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
@@ -38,7 +38,12 @@ class LoginSerializer(serializers.Serializer):
             msg = 'Must include "email" and "password".'
             raise serializers.ValidationError(msg)
         
+class ReviewSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['user', 'review', 'created_at']
+        
 class VeterinarySerializer(serializers.ModelSerializer):
     class Meta:
         model = Veterinary
-        fields = [ 'id' , 'first_name', 'last_name', 'email', 'location', 'gender', 'created_at']
+        fields = ['id', 'first_name', 'last_name', 'email', 'location', 'gender', 'created_at', 'reviews']

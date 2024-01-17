@@ -17,17 +17,19 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from woofers import views
-from .views import UpdateUserView, GetCSRFToken
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/login/', views.LoginView.as_view()),
     path('user/logout/', views.LogoutView.as_view()),
     path('user/user/', views.current_user, name='current-user'),
-    path('user/user/update/', UpdateUserView.as_view(), name='update-user'),
     path('user/register/', views.RegisterView.as_view()),
+    path('user/update/', views.UpdateUserView.as_view(), name='update-user'),
     path('users/', views.UserListView.as_view()),
     path('veterinaries/', views.VeterinaryListCreateView.as_view(), name='veterinary-list-create'),
     path('veterinary/<int:pk>/', views.VeterinaryDetailView.as_view(), name='veterinary-detail'),
-    path('csrf/', GetCSRFToken.as_view()),
-]
+    path('csrf/', views.GetCSRFToken.as_view()),
+     path('reviews/', views.PostReview.as_view(), name='post_review'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
