@@ -1,8 +1,6 @@
-from rest_framework import serializers
+from rest_framework import serializers, exceptions
 from .models import User, Veterinary, Review
 from django.contrib.auth import authenticate , get_user_model
-from rest_framework import serializers
-from django.core.exceptions import ValidationError
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,11 +37,22 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError(msg)
         
 class ReviewSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
     class Meta:
         model = Review
         fields = ['user', 'review', 'created_at']
         
+    def create(self, validated_data):
+        user = self.context['request'].user
+        if user.is_authenticated:
+            validated_data['user'] = user
+            return super().create(validated_data)
+        else:
+            raise exceptions.AuthenticationFailed('User must be authenticated to create a review.')
+
+        
 class VeterinarySerializer(serializers.ModelSerializer):
+    reviews = ReviewSerializer(many=True, read_only=True)
     class Meta:
         model = Veterinary
         fields = ['id', 'first_name', 'last_name', 'email', 'location', 'gender', 'created_at', 'reviews']

@@ -1,5 +1,4 @@
 from rest_framework import status, views, response, generics
-from rest_framework.views import APIView
 from .models import User, Veterinary
 from .serializers import UserSerializer, LoginSerializer, VeterinarySerializer, ReviewSerializer
 from django.contrib.auth import authenticate , login
@@ -9,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 from django.http import JsonResponse
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
 @method_decorator(ensure_csrf_cookie, name='dispatch') 
@@ -108,8 +108,11 @@ class VeterinaryDetailView(generics.RetrieveAPIView):
     serializer_class = VeterinarySerializer
     
 class PostReview(views.APIView):
-    def post_review(request):
-        serializer = ReviewSerializer(data=request.data)
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = ReviewSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return response.Response(serializer.data, status=status.HTTP_201_CREATED)

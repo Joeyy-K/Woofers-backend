@@ -31,5 +31,5 @@ urlpatterns = [
     path('veterinaries/', views.VeterinaryListCreateView.as_view(), name='veterinary-list-create'),
     path('veterinary/<int:pk>/', views.VeterinaryDetailView.as_view(), name='veterinary-detail'),
     path('csrf/', views.GetCSRFToken.as_view()),
-     path('reviews/', views.PostReview.as_view(), name='post_review'),
+    path('reviews/', views.PostReview.as_view(), name='post_review'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

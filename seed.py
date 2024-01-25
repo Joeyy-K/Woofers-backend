@@ -6,10 +6,18 @@ from faker import Faker
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'woofers.settings')
 django.setup()
 
-from woofers.models import Veterinary  # replace with your actual app name
+from woofers.models import Veterinary, Review, User  # replace with your actual app name
 fake = Faker()
 
 GENDER_CHOICES = ['M', 'F', 'O']
+
+def create_user():
+    user = User(
+        email=fake.email(),
+        username=fake.user_name(),
+        password=fake.password()
+    )
+    user.save()
 
 def create_veterinary():
     veterinary = Veterinary(
@@ -18,9 +26,21 @@ def create_veterinary():
         email=fake.email(),
         location=fake.city(),
         gender=random.choice(GENDER_CHOICES),
-        created_at=fake.date_time_this_year()
+        created_at=fake.date_time_this_year(),
+        profile_picture=None  # You can add a default image path here
     )
     veterinary.save()
+
+    # Create associated reviews
+    for _ in range(random.randint(1, 5)):  # Randomly generate between 1 and 5 reviews
+        user = User.objects.order_by('?').first()  # Randomly select a user
+        review = Review(
+            user=user,
+            veterinary=veterinary,
+            review=fake.text(),
+            created_at=fake.date_time_this_year()
+        )
+        review.save()
 
 def add_veterinaries(n=20):
     for _ in range(n):

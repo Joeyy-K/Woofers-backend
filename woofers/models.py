@@ -30,10 +30,11 @@ class Veterinary(models.Model):
         return f'{self.first_name} {self.last_name}'
     
 class Review(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='reviews')
     veterinary = models.ForeignKey(Veterinary, on_delete=models.CASCADE, related_name='reviews')
     review = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
+    updated = models.DateField(auto_now=True)
 
     def __str__(self):
         return f'Review by {self.user.email} for {self.veterinary.first_name} {self.veterinary.last_name}'
