@@ -21,7 +21,13 @@ class LoginView(views.APIView):
         login(request, user)
         token, created = Token.objects.get_or_create(user=user)
         user_serializer = UserSerializer(user)  # serialize the user data
-        return response.Response({'token': token.key, 'user': user_serializer.data}, status=status.HTTP_200_OK)
+        
+        res = response.Response({'user': user_serializer.data}, status=status.HTTP_200_OK)
+
+        # Set the HTTP-only cookie in the response
+        res.set_cookie('userToken', token.key, httponly=True)
+
+        return res
     
 class LogoutView(views.APIView):
     def post( self, request, format=None):

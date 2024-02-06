@@ -40,7 +40,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
     class Meta:
         model = Review
-        fields = ['user', 'review', 'created_at']
+        fields = ['user', 'veterinary', 'review', 'created_at']
         
     def create(self, validated_data):
         user = self.context['request'].user
