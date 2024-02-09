@@ -1,13 +1,12 @@
-from rest_framework import status, views, response, generics
+from django.http import HttpResponse
+from rest_framework import status, views, response, generics, permissions
 from .models import User, Veterinary
 from .serializers import UserSerializer, LoginSerializer, VeterinarySerializer, ReviewSerializer
 from django.contrib.auth import authenticate , login
 from django.contrib import auth
 from rest_framework.authtoken.models import Token
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
-from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
-from django.http import JsonResponse
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 
@@ -24,53 +23,30 @@ class LoginView(views.APIView):
         
         res = response.Response({'user': user_serializer.data}, status=status.HTTP_200_OK)
 
-        # Set the HTTP-only cookie in the response
         res.set_cookie('userToken', token.key, httponly=True)
 
         return res
     
 class LogoutView(views.APIView):
-    def post( self, request, format=None):
+    def post(self, request, format=None):
         try:
             auth.logout(request)
-            return response.Response({ 'success' : 'Logged Out'})
+            response = HttpResponse("You're logged out.")
+            response.delete_cookie('csrftoken')
+            return response
         except:
-             return response.Response({ 'success' : 'Error while logging out'})
+            return response.Response({ 'success' : 'Error while logging out'})
 
 class UpdateUserView(views.APIView):
+    permission_classes = [permissions.IsAuthenticated]
 
     def put(self, request, *args, **kwargs):
-        # Get the token from the request headers
-        token = request.headers.get('Authorization')
-        if not token:
-            return response.Response({"detail": "Authentication credentials were not provided."}, status=status.HTTP_401_UNAUTHORIZED)
-        parts = token.split(' ')
-        if len(parts) != 2 or parts[0].lower() != 'token':
-            return response.Response({"detail": "Invalid token header. No credentials provided."}, status=status.HTTP_401_UNAUTHORIZED)
-
-        # The actual token is the second part of the header
-        token = parts[1]
-        # Remove the 'Token' prefix
-
-        # Authenticate the user
-        user = authenticate(request, token=token)
-        if user is None:
-            return response.Response({"detail": "Invalid token."}, status=status.HTTP_401_UNAUTHORIZED)
-
-        # Proceed with updating the user
+        user = request.user
         serializer = UserSerializer(user, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return response.Response(serializer.data)
-        return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)     
-        
-@login_required
-def current_user(request):
-    user = request.user
-    return JsonResponse({
-        'email': user.email,
-        'username': user.username
-    })
+        return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @method_decorator(ensure_csrf_cookie, name='dispatch')
 class RegisterView(views.APIView):
@@ -87,13 +63,15 @@ class RegisterView(views.APIView):
             else:
                 return response.Response({'error': 'Authentication failed.'}, status=status.HTTP_400_BAD_REQUEST)
             token, created = Token.objects.get_or_create(user=user)
-            response_data = {'token': token.key, 'user': UserSerializer(user).data}
-            # Log the response data
-            return response.Response(
-                {'token': token.key, 'user': UserSerializer(user).data}, 
-                status=status.HTTP_201_CREATED
-            )
+            user_serializer = UserSerializer(user) 
+                        
+            res = response.Response({'user': user_serializer.data}, status=status.HTTP_201_CREATED)
+
+            res.set_cookie('userToken', token.key, httponly=True)
+
+            return res
         return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
    
 @method_decorator(ensure_csrf_cookie, name='dispatch') 
 class GetCSRFToken(views.APIView):
