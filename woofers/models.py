@@ -38,4 +38,17 @@ class Review(models.Model):
 
     def __str__(self):
         return f'Review by {self.user.email} for {self.veterinary.first_name} {self.veterinary.last_name}'
+    
+class Appointment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='appointments')
+    veterinary = models.ForeignKey(Veterinary, on_delete=models.CASCADE, related_name='appointments')
+    date = models.DateField()
+    time = models.TimeField()
+    reason_for_visit = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'Appointment for {self.user.email} with {self.veterinary.first_name} {self.veterinary.last_name} on {self.date} at {self.time}'
+
 

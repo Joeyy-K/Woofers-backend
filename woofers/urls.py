@@ -19,6 +19,7 @@ from django.urls import path
 from woofers import views
 from django.conf import settings
 from django.conf.urls.static import static
+from .views import AppointmentView, AppointmentDetailView, UserAppointmentsView, AppointmentDeleteView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -31,4 +32,8 @@ urlpatterns = [
     path('veterinary/<int:pk>/', views.VeterinaryDetailView.as_view(), name='veterinary-detail'),
     path('csrf/', views.GetCSRFToken.as_view()),
     path('reviews/', views.PostReview.as_view(), name='post_review'),
+    path('appointments/', AppointmentView.as_view(), name='appointments'),
+    path('appointments/<int:pk>/', AppointmentDetailView.as_view(), name='appointment-detail'),
+    path('appointments/me/', UserAppointmentsView.as_view(), name='user-appointments'),
+    path('appointments/<int:pk>/delete/', AppointmentDeleteView.as_view(), name='appointment-delete'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

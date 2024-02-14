@@ -1,6 +1,6 @@
 from rest_framework import serializers, exceptions
-from .models import User, Veterinary, Review
-from django.contrib.auth import authenticate , get_user_model
+from .models import User, Veterinary, Review, Appointment
+from django.contrib.auth import authenticate
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,8 +14,6 @@ class UserSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
-    
-User = get_user_model()
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -60,3 +58,24 @@ class VeterinarySerializer(serializers.ModelSerializer):
     class Meta:
         model = Veterinary
         fields = ['id', 'first_name', 'last_name', 'email', 'location', 'gender', 'created_at', 'reviews']
+        
+class AppointmentSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    veterinary = VeterinarySerializer(read_only=True)
+
+    class Meta:
+        model = Appointment
+        fields = ['id', 'user', 'veterinary', 'date', 'time', 'created_at', 'reason_for_visit', 'updated_at']
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        veterinary_id = self.context['request'].data.get('veterinary')
+        veterinary = Veterinary.objects.get(id=veterinary_id)
+        if user.is_authenticated:
+            validated_data['user'] = user
+            validated_data['veterinary'] = veterinary
+            return super().create(validated_data)
+        else:
+            raise exceptions.AuthenticationFailed('User must be authenticated to create an appointment.')
+
+

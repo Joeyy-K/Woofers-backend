@@ -1,11 +1,11 @@
 from django.http import HttpResponse
 from rest_framework import status, views, response, generics, permissions
-from .models import User, Veterinary
-from .serializers import UserSerializer, LoginSerializer, VeterinarySerializer, ReviewSerializer
+from .models import User, Veterinary, Appointment
+from .serializers import UserSerializer, LoginSerializer, VeterinarySerializer, ReviewSerializer, AppointmentSerializer
 from django.contrib.auth import authenticate , login
 from django.contrib import auth
 from rest_framework.authtoken.models import Token
-from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
+from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -101,3 +101,32 @@ class PostReview(views.APIView):
             serializer.save()
             return response.Response(serializer.data, status=status.HTTP_201_CREATED)
         return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class AppointmentView(generics.ListCreateAPIView):
+    queryset = Appointment.objects.all()
+    serializer_class = AppointmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+class AppointmentDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Appointment.objects.all()
+    serializer_class = AppointmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    
+class UserAppointmentsView(generics.ListAPIView):
+    serializer_class = AppointmentSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Appointment.objects.filter(user=user)
+    
+class AppointmentDeleteView(generics.DestroyAPIView):
+    queryset = Appointment.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return super().get_queryset().filter(user=user)
