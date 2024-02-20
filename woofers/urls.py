@@ -19,7 +19,6 @@ from django.urls import path
 from woofers import views
 from django.conf import settings
 from django.conf.urls.static import static
-from .views import AppointmentView, AppointmentDetailView, UserAppointmentsView, AppointmentDeleteView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -32,8 +31,10 @@ urlpatterns = [
     path('veterinary/<int:pk>/', views.VeterinaryDetailView.as_view(), name='veterinary-detail'),
     path('csrf/', views.GetCSRFToken.as_view()),
     path('reviews/', views.PostReview.as_view(), name='post_review'),
-    path('appointments/', AppointmentView.as_view(), name='appointments'),
-    path('appointments/<int:pk>/', AppointmentDetailView.as_view(), name='appointment-detail'),
-    path('appointments/me/', UserAppointmentsView.as_view(), name='user-appointments'),
-    path('appointments/<int:pk>/delete/', AppointmentDeleteView.as_view(), name='appointment-delete'),
+    path('appointments/', views.AppointmentView.as_view(), name='appointments'),
+    path('appointments/<int:pk>/', views.AppointmentDetailView.as_view(), name='appointment-detail'),
+    path('appointments/me/', views.UserAppointmentsView.as_view(), name='user-appointments'),
+    path('appointments/<int:pk>/delete/', views.AppointmentDeleteView.as_view(), name='appointment-delete'),
+    path('cities/', views.CityListView.as_view(), name='city-list'),
+    path('countries/', views.CountryListView.as_view(), name='country-list'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

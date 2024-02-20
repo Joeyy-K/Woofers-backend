@@ -1,50 +1,32 @@
 import os
 import django
-import random
-from faker import Faker
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'woofers.settings')
 django.setup()
 
-from woofers.models import Veterinary, Review, User  # replace with your actual app name
-fake = Faker()
+from woofers.models import Veterinary, City, Country
 
-GENDER_CHOICES = ['M', 'F', 'O']
+def seed_data():
+    # Create Kenya country instance
+    kenya, created = Country.objects.get_or_create(name='Kenya')
 
-def create_user():
-    user = User(
-        email=fake.email(),
-        username=fake.user_name(),
-        password=fake.password()
-    )
-    user.save()
+    # List of cities in Kenya
+    cities_in_kenya = ['Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret']  # add more cities
 
-def create_veterinary():
-    veterinary = Veterinary(
-        first_name=fake.first_name(),
-        last_name=fake.last_name(),
-        email=fake.email(),
-        location=fake.city(),
-        gender=random.choice(GENDER_CHOICES),
-        created_at=fake.date_time_this_year(),
-        profile_picture=None  # You can add a default image path here
-    )
-    veterinary.save()
+    # Create City instances for each city in Kenya
+    for city_name in cities_in_kenya:
+        City.objects.get_or_create(name=city_name, country=kenya)
 
-    # Create associated reviews
-    for _ in range(random.randint(1, 5)):  # Randomly generate between 1 and 5 reviews
-        user = User.objects.order_by('?').first()  # Randomly select a user
-        review = Review(
-            user=user,
-            veterinary=veterinary,
-            review=fake.text(),
-            created_at=fake.date_time_this_year()
-        )
-        review.save()
+    # Get all veterinarians
+    vets = Veterinary.objects.all()
 
-def add_veterinaries(n=20):
-    for _ in range(n):
-        create_veterinary()
+    # Get all cities
+    cities = City.objects.all()
+
+    # Assign each vet to a city
+    for i, vet in enumerate(vets):
+        vet.city = cities[i % len(cities)]  # This will cycle through the cities list
+        vet.save()
 
 if __name__ == '__main__':
-    add_veterinaries(20)
+    seed_data()

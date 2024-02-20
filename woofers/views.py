@@ -1,7 +1,7 @@
 from django.http import HttpResponse
 from rest_framework import status, views, response, generics, permissions
-from .models import User, Veterinary, Appointment
-from .serializers import UserSerializer, LoginSerializer, VeterinarySerializer, ReviewSerializer, AppointmentSerializer
+from .models import User, Veterinary, Appointment, City, Country
+from .serializers import UserSerializer, LoginSerializer, VeterinarySerializer, ReviewSerializer, AppointmentSerializer, CountrySerializer, CitySerializer
 from django.contrib.auth import authenticate , login
 from django.contrib import auth
 from rest_framework.authtoken.models import Token
@@ -21,9 +21,9 @@ class LoginView(views.APIView):
         token, created = Token.objects.get_or_create(user=user)
         user_serializer = UserSerializer(user)  # serialize the user data
         
-        res = response.Response({'user': user_serializer.data}, status=status.HTTP_200_OK)
+        res = response.Response({'user': user_serializer.data, 'token': token.key}, status=status.HTTP_200_OK)
 
-        res.set_cookie('userToken', token.key, httponly=True)
+        res.set_cookie('userToken', token.key, httponly=False)
 
         return res
     
@@ -67,7 +67,7 @@ class RegisterView(views.APIView):
                         
             res = response.Response({'user': user_serializer.data}, status=status.HTTP_201_CREATED)
 
-            res.set_cookie('userToken', token.key, httponly=True)
+            res.set_cookie('userToken', token.key, httponly=False)
 
             return res
         return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -130,3 +130,11 @@ class AppointmentDeleteView(generics.DestroyAPIView):
     def get_queryset(self):
         user = self.request.user
         return super().get_queryset().filter(user=user)
+
+class CityListView(generics.ListAPIView):
+    queryset = City.objects.all()
+    serializer_class = CitySerializer
+
+class CountryListView(generics.ListAPIView):
+    queryset = Country.objects.all()
+    serializer_class = CountrySerializer

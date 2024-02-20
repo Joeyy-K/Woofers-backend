@@ -1,5 +1,5 @@
 from rest_framework import serializers, exceptions
-from .models import User, Veterinary, Review, Appointment
+from .models import User, Veterinary, Review, Appointment, City, Country
 from django.contrib.auth import authenticate
 
 class UserSerializer(serializers.ModelSerializer):
@@ -40,6 +40,7 @@ class LoginSerializer(serializers.Serializer):
         
 class ReviewSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
+    
     class Meta:
         model = Review
         fields = ['user', 'veterinary', 'review', 'created_at']
@@ -52,12 +53,25 @@ class ReviewSerializer(serializers.ModelSerializer):
         else:
             raise exceptions.AuthenticationFailed('User must be authenticated to create a review.')
 
+class CountrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Country
+        fields = ['id', 'name']
+
+class CitySerializer(serializers.ModelSerializer):
+    country = CountrySerializer(read_only=True)
+
+    class Meta:
+        model = City
+        fields = ['id', 'name', 'country']
         
 class VeterinarySerializer(serializers.ModelSerializer):
     reviews = ReviewSerializer(many=True, read_only=True)
+    city = CitySerializer(read_only=True)
+    
     class Meta:
         model = Veterinary
-        fields = ['id', 'first_name', 'last_name', 'email', 'location', 'gender', 'created_at', 'reviews']
+        fields = ['id', 'first_name', 'last_name', 'email', 'location', 'gender', 'created_at', 'reviews', 'city']
         
 class AppointmentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)
