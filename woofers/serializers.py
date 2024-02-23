@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'date_joined', 'last_login' ]
+        fields = ['username', 'email', 'password', 'date_joined', 'last_login', 'profile_picture' ]
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -71,7 +71,7 @@ class VeterinarySerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Veterinary
-        fields = ['id', 'first_name', 'last_name', 'email', 'location', 'gender', 'created_at', 'reviews', 'city']
+        fields = ['id', 'first_name', 'last_name', 'email', 'gender', 'created_at', 'reviews', 'city', 'profile_picture', 'bio']
         
 class AppointmentSerializer(serializers.ModelSerializer):
     user = UserSerializer(read_only=True)

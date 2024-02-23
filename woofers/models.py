@@ -1,9 +1,19 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
+import os
+import random
+from django.conf import settings
+
+
+def get_random_profile_picture():
+    default_images_dir = os.path.join(settings.STATICFILES_DIRS[0], 'default_images')
+    images = os.listdir(default_images_dir)
+    return os.path.join('default_images', random.choice(images))
 
 class User(AbstractUser):
     email = models.EmailField(unique=True)
+    profile_picture = models.ImageField(upload_to='user_pictures/', default=get_random_profile_picture)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
@@ -24,6 +34,15 @@ class City(models.Model):
     def __str__(self):
         return self.name
 
+def get_default_profile_picture(instance=None):
+    if instance is None:
+        return os.path.join('default_images', 'default.jpg')
+    elif instance.gender == 'M':
+        return os.path.join('default_images', 'default_male.jpg')
+    elif instance.gender == 'F':
+        return os.path.join('default_images', 'default_female.jpg')
+    else:
+        return os.path.join('default_images', 'default_other.jpg')
 
 class Veterinary(models.Model):
     GENDER_CHOICES = (
@@ -36,9 +55,9 @@ class Veterinary(models.Model):
     last_name = models.CharField(max_length=30)
     email = models.EmailField(unique=True)
     city = models.ForeignKey(City, on_delete=models.SET_NULL, null=True)
-    location = models.CharField(max_length=100)
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES)
-    profile_picture = models.ImageField(upload_to='veterinary_pictures/', null=True, blank=True)
+    bio = models.TextField(null=True, blank=True)
+    profile_picture = models.ImageField(upload_to='veterinary_pictures/', default=get_default_profile_picture)
     created_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):

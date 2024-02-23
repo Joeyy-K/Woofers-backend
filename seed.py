@@ -1,32 +1,34 @@
 import os
 import django
+import random
+from faker import Faker
+from django.contrib.auth.hashers import make_password
+from django.contrib.auth import get_user_model
+
+from woofers import settings
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'woofers.settings')
 django.setup()
 
-from woofers.models import Veterinary, City, Country
+def get_random_profile_picture():
+    default_images_dir = os.path.join(settings.STATICFILES_DIRS[0], 'default_images')
+    images = os.listdir(default_images_dir)
+    return os.path.join('default_images', random.choice(images))
 
 def seed_data():
-    # Create Kenya country instance
-    kenya, created = Country.objects.get_or_create(name='Kenya')
-
-    # List of cities in Kenya
-    cities_in_kenya = ['Nairobi', 'Mombasa', 'Kisumu', 'Nakuru', 'Eldoret']  # add more cities
-
-    # Create City instances for each city in Kenya
-    for city_name in cities_in_kenya:
-        City.objects.get_or_create(name=city_name, country=kenya)
-
-    # Get all veterinarians
-    vets = Veterinary.objects.all()
-
-    # Get all cities
-    cities = City.objects.all()
-
-    # Assign each vet to a city
-    for i, vet in enumerate(vets):
-        vet.city = cities[i % len(cities)]  # This will cycle through the cities list
-        vet.save()
+    User = get_user_model()
+    fake = Faker()
+    
+    # Create 30 User instances
+    for _ in range(30):
+        username = fake.unique.user_name()  # Generate a unique username
+        email = fake.unique.email()  # Generate a unique email
+        user, created = User.objects.get_or_create(email=email, defaults={'username': username})
+        if created:
+            user.profile_picture = get_random_profile_picture()
+            password = make_password('SecurePassword123')  # Hash the password
+            user.password = password
+            user.save()
 
 if __name__ == '__main__':
     seed_data()
