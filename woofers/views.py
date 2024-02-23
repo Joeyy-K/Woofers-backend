@@ -14,16 +14,15 @@ from rest_framework.permissions import IsAuthenticated
 class LoginView(views.APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data, context={'request': request})
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid(raise_exception=True) # validates the user
         user = serializer.validated_data.get('user')
-        # Log in the user
-        login(request, user)
-        token, created = Token.objects.get_or_create(user=user)
+        login(request, user) # logs in the user
+        token, created = Token.objects.get_or_create(user=user) # creates token for user
         user_serializer = UserSerializer(user)  # serialize the user data
         
         res = response.Response({'user': user_serializer.data, 'token': token.key}, status=status.HTTP_200_OK)
-
-        res.set_cookie('userToken', token.key, httponly=False)
+        # response that is to be sent to the frontend
+        res.set_cookie('userToken', token.key, httponly=False) # token is set in cookie
 
         return res
     
@@ -53,36 +52,33 @@ class RegisterView(views.APIView):
     def post(self, request):
         email = request.data.get('email')
         if User.objects.filter(email=email).exists():
-            return response.Response({'error': 'Email already in use.'}, status=status.HTTP_400_BAD_REQUEST)
+            return response.Response({'error': 'Email already in use.'}, status=status.HTTP_400_BAD_REQUEST) # checks if user with emails already exits
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
             auth_user = authenticate(username=user.email, password=request.data.get('password'))
             if auth_user is not None:
-                login(request, auth_user)
+                login(request, auth_user) #logs in the user
             else:
                 return response.Response({'error': 'Authentication failed.'}, status=status.HTTP_400_BAD_REQUEST)
-            token, created = Token.objects.get_or_create(user=user)
+            token, created = Token.objects.get_or_create(user=user) # creates token for user
             user_serializer = UserSerializer(user) 
                         
             res = response.Response({'user': user_serializer.data}, status=status.HTTP_201_CREATED)
-
-            res.set_cookie('userToken', token.key, httponly=False)
+            # response that will be sent to the frontend
+            res.set_cookie('userToken', token.key, httponly=False) # token is set and will be used to authorize the users actions
 
             return res
         return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-   
+class UserListView(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer  
+    
 @method_decorator(ensure_csrf_cookie, name='dispatch') 
 class GetCSRFToken(views.APIView):
     def get(self, request, format=None):
         return response.Response({ 'success': 'CSRF Cookie set'})
-    
-
-class UserListView(generics.ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    
 class VeterinaryListCreateView(generics.ListCreateAPIView):
     queryset = Veterinary.objects.all()
     serializer_class = VeterinarySerializer
