@@ -49,7 +49,7 @@ MIDDLEWARE = [
 CORS_ALLOW_CREDENTIALS = True
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
+    "https://woofers-in9f.onrender.com/",
 ]
 
 CORS_ALLOW_HEADERS = [
@@ -58,7 +58,7 @@ CORS_ALLOW_HEADERS = [
     'Authorization'
 ]
 
-CSRF_TRUSTED_ORIGINS = ['http://localhost:5173']
+CSRF_TRUSTED_ORIGINS = ['https://woofers-in9f.onrender.com/']
 
 ROOT_URLCONF = 'woofers.urls'
 
