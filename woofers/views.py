@@ -64,7 +64,7 @@ class RegisterView(views.APIView):
             token, created = Token.objects.get_or_create(user=user) # creates token for user
             user_serializer = UserSerializer(user) 
                         
-            res = response.Response({'user': user_serializer.data}, status=status.HTTP_201_CREATED)
+            res = response.Response({'user': user_serializer.data, 'token': token.key}, status=status.HTTP_201_CREATED)
             # response that will be sent to the frontend
             res.set_cookie('userToken', token.key, httponly=False) # token is set and will be used to authorize the users actions
 
