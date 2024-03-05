@@ -30,9 +30,10 @@ class Country(models.Model):
 class City(models.Model):
     name = models.CharField(unique=True, max_length=100)
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    ...
 
-    def __str__(self):
-        return self.name
 
 def get_default_profile_picture(instance=None):
     if instance is None:
